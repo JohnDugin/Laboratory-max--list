@@ -1,49 +1,53 @@
-#include <cassert>
 #include "TwoLinkedList.h"
 
-TwoLinkedList::Node::Node(const ValueType& value, Node* next, Node* prev){
+#include <cassert>
+
+
+// PRIVATE методы ----- КОНСТРУКТОР И ДИСТРУКТОР --------------------
+TwoLinkedList::Node::Node(const ValueType &value, Node *next, Node *prev) {
     this->value = value;
     this->next = next;
     this->prev = prev;
 }
 
-TwoLinkedList::Node::~Node(){
-    // ничего не удаляем, т.к. агрегация
-}
+TwoLinkedList::Node::~Node() {}
 
-void TwoLinkedList::Node::insertNext(const ValueType& value){
-    Node* newNode = new Node(value, this->next, this);
+// PRIVATE методы ---------------------------------------------------
+void TwoLinkedList::Node::insertNext(const ValueType &value) {
+    Node *newNode = new Node(value, this->next, this);
     this->next->prev = newNode;
     this->next = newNode;
 }
 
-void TwoLinkedList::Node::insertPrev(const ValueType &value){
-    Node* newNode = new Node(value, this, this->prev);
+void TwoLinkedList::Node::insertPrev(const ValueType &value) {
+    Node *newNode = new Node(value, this, this->prev);
     this->prev->next = newNode;
     this->prev = newNode;
 }
 
-void TwoLinkedList::Node::removeNext(){
+void TwoLinkedList::Node::removeNext() {
     Node *deleteNode = this->next;
     this->next = deleteNode->next;
     deleteNode->next->prev = this;
     delete deleteNode;
 }
 
-void TwoLinkedList::Node::removePrev(){
+void TwoLinkedList::Node::removePrev() {
     Node *deleteNode = this->prev;
     this->prev = deleteNode->prev;
     deleteNode->prev->next = this;
     delete deleteNode;
 }
 
-TwoLinkedList::TwoLinkedList()
-: _head(nullptr), _tail(nullptr), _size(0){
 
+// PUBLIC методы ---- КОНСТРУКТОРЫ И ДИСТРУКТОР ---------------------
+TwoLinkedList::TwoLinkedList() {
+    _head = nullptr;
+    _tail = nullptr;
+    _size = 0;
 }
 
-TwoLinkedList::TwoLinkedList(const TwoLinkedList& copyList)
-{
+TwoLinkedList::TwoLinkedList(const TwoLinkedList &copyList) {
     this->_size = copyList._size;
     if (this->_size == 0) {
         this->_head = nullptr;
@@ -52,22 +56,19 @@ TwoLinkedList::TwoLinkedList(const TwoLinkedList& copyList)
     }
 
     this->_head = new Node(copyList._head->value);
-        Node* currentNode = this->_head;
-        Node* curentNodePrev;
-        Node* currentCopyNode = copyList._head;
-        currentNode->prev = currentCopyNode->prev;
-        while (currentCopyNode->next) {
-            currentNode->next = new Node(currentCopyNode->value);
-            currentCopyNode = currentCopyNode->next;
-            curentNodePrev = currentNode;
-            currentNode = currentNode->next;
-            currentNode->prev = curentNodePrev;
+    this->_tail = new Node(copyList._tail->value);
+
+    Node *currentNode = this->_head;
+    Node *currentCopyNode = copyList._head->next;
+
+    while (currentCopyNode) {
+        currentNode->next = new Node(currentCopyNode->value);
+        currentCopyNode = currentCopyNode->next;
+        currentNode = currentNode->next;
     }
-    this->_tail = currentNode;
 }
 
-TwoLinkedList& TwoLinkedList::operator=(const TwoLinkedList& copyList)
-{
+TwoLinkedList &TwoLinkedList::operator=(const TwoLinkedList &copyList) {
     if (this == &copyList) {
         return *this;
     }
@@ -79,8 +80,7 @@ TwoLinkedList& TwoLinkedList::operator=(const TwoLinkedList& copyList)
     return *this;
 }
 
-TwoLinkedList::TwoLinkedList(TwoLinkedList&& moveList) noexcept
-{
+TwoLinkedList::TwoLinkedList(TwoLinkedList &&moveList) noexcept {
     this->_size = moveList._size;
     this->_head = moveList._head;
     this->_tail = moveList._tail;
@@ -90,11 +90,11 @@ TwoLinkedList::TwoLinkedList(TwoLinkedList&& moveList) noexcept
     moveList._tail = nullptr;
 }
 
-TwoLinkedList& TwoLinkedList::operator=(TwoLinkedList&& moveList) noexcept
-{
+TwoLinkedList &TwoLinkedList::operator=(TwoLinkedList &&moveList) noexcept {
     if (this == &moveList) {
         return *this;
     }
+
     forceNodeDelete(_head);
     this->_size = moveList._size;
     this->_head = moveList._head;
@@ -107,34 +107,35 @@ TwoLinkedList& TwoLinkedList::operator=(TwoLinkedList&& moveList) noexcept
     return *this;
 }
 
-TwoLinkedList::~TwoLinkedList(){
+TwoLinkedList::~TwoLinkedList() {
     forceNodeDelete(_head);
 }
 
-ValueType& TwoLinkedList::operator[](const size_t pos) const{
+
+
+
+ValueType &TwoLinkedList::operator[](const size_t pos) const {
     return getNode(pos)->value;
 }
 
-TwoLinkedList::Node* TwoLinkedList::getNode(const size_t pos) const{
+TwoLinkedList::Node *TwoLinkedList::getNode(const size_t pos) const {
     if (pos < 0) {
         assert(pos < 0);
-    }
-    else if (pos >= this->_size) {
+    } else if (pos >= this->_size) {
         assert(pos >= this->_size);
     }
-    Node* bufNode = this->_head;
+    Node *bufNode = this->_head;
     for (int i = 0; i < pos; ++i) {
         bufNode = bufNode->next;
     }
     return bufNode;
 }
 
-void TwoLinkedList::insert(const size_t pos, const ValueType& value)
-{
+
+void TwoLinkedList::insert(const size_t pos, const ValueType &value) {
     if (pos < 0) {
         assert(pos < 0);
-    }
-    else if (pos >= this->_size) {
+    } else if (pos >= this->_size) {
         assert(pos >= this->_size);
     }
 
@@ -143,68 +144,64 @@ void TwoLinkedList::insert(const size_t pos, const ValueType& value)
     else if (pos == _size - 1)
         pushBack(value);
     else {
-        int middle = (_size-1)/2;
-        bool f = pos/middle;
-        if(f)
+        int middle = (_size - 1) / 2;
+        bool f = pos / middle;
+        if (f)
             insertBeforeNode(getNode(pos + 1), value);
         else
             insertAfterNode(getNode(pos - 1), value);
     }
 }
 
-void TwoLinkedList::insertAfterNode(Node* node, const ValueType& value){
-    if(node->next == nullptr){
+void TwoLinkedList::insertAfterNode(Node *node, const ValueType &value) {
+    if (node->next == nullptr) {
         pushBack(value);
-    }
-    else {
+    } else {
         node->insertNext(value);
         _size++;
     }
 }
 
-void TwoLinkedList::insertBeforeNode(Node* node, const ValueType& value){
-    if(node->prev == nullptr){
+void TwoLinkedList::insertBeforeNode(Node *node, const ValueType &value) {
+    if (node->prev == nullptr) {
         pushFront(value);
-    }
-    else {
+    } else {
         node->insertPrev(value);
         _size++;
     }
 }
 
-void TwoLinkedList::pushBack(const ValueType& value){
+void TwoLinkedList::pushBack(const ValueType &value) {
 
     Node *n = new Node(value, nullptr, _tail);
-    if(_size == 0){
+    if (_size == 0) {
         _head = n;
         _tail = n;
-    }
-    else{
+    } else {
         _tail->next = n;
         _tail = n;
     }
     ++_size;
 }
 
-void TwoLinkedList::pushFront(const ValueType& value){
+void TwoLinkedList::pushFront(const ValueType &value) {
 
     Node *n = new Node(value, _head, nullptr);
-    if(_size == 0){
+    if (_size == 0) {
         _head = n;
         _tail = n;
-    }
-    else{
+    } else {
         _head->prev = n;
         _head = n;
     }
     ++_size;
 }
 
-void TwoLinkedList::remove(const size_t pos){
+
+void TwoLinkedList::remove(const size_t pos) {
     if (pos < 0) {
         assert(pos < 0);
-    }
-    else if (pos >= this->_size) {
+    } else if (pos >= this->_size) {
         assert(pos >= this->_size);
     }
 
@@ -213,38 +210,36 @@ void TwoLinkedList::remove(const size_t pos){
     else if (pos == _size - 1)
         removeBack();
     else {
-        int middle = (_size-1)/2;
-        bool f = pos/middle;
-        if(f)
+        int middle = (_size - 1) / 2;
+        bool f = pos / middle;
+        if (f)
             removePrevNode(getNode(pos + 1));
         else
             removeNextNode(getNode(pos - 1));
     }
 }
 
-void TwoLinkedList::removeNextNode(Node* node){
-    if(node->next == nullptr);
-    else if(node->next == _tail){
+void TwoLinkedList::removeNextNode(Node *node) {
+    if (node->next == nullptr);
+    else if (node->next == _tail) {
         removeBack();
-    }
-    else {
+    } else {
         node->removeNext();
         _size--;
     }
 }
 
-void TwoLinkedList::removePrevNode(Node* node){
-    if(node->prev == nullptr);
-    else if(node->prev == _head){
+void TwoLinkedList::removePrevNode(Node *node) {
+    if (node->prev == nullptr);
+    else if (node->prev == _head) {
         removeFront();
-    }
-    else {
+    } else {
         node->removePrev();
         _size--;
     }
 }
 
-void TwoLinkedList::removeFront(){
+void TwoLinkedList::removeFront() {
     Node *deleteHead = getNode(0);
     Node *newHead = getNode(1);
     newHead->prev = nullptr;
@@ -253,7 +248,7 @@ void TwoLinkedList::removeFront(){
     _size--;
 }
 
-void TwoLinkedList::removeBack(){
+void TwoLinkedList::removeBack() {
     Node *newTail = getNode(_size - 2);
     newTail->next = nullptr;
     Node *deleteTail = getNode(_size - 1);
@@ -262,13 +257,12 @@ void TwoLinkedList::removeBack(){
     _size--;
 }
 
-long long int TwoLinkedList::findIndex(const ValueType& value) const
-{
-    Node * node = this->_head;
 
-    for(int i = 0; i < _size; ++i)
-    {
-        if(node->value == value){
+long long int TwoLinkedList::findIndex(const ValueType &value) const {
+    Node *node = this->_head;
+
+    for (int i = 0; i < _size; ++i) {
+        if (node->value == value) {
             return i;
         }
         node = node->next;
@@ -276,43 +270,49 @@ long long int TwoLinkedList::findIndex(const ValueType& value) const
     return -1;
 }
 
-TwoLinkedList::Node* TwoLinkedList::findNode(const ValueType& value) const
-{
+TwoLinkedList::Node *TwoLinkedList::findNode(const ValueType &value) const {
     int index = findIndex(value);
     assert(index != -1);
     return getNode(index);
 }
 
-void TwoLinkedList::reverse()
-{
+void TwoLinkedList::reverse() {
+    int index = _size - 1;
+    long double n;
+    for (int i = 0; i <= int((_size - 1) / 2); ++i) {
+        n = getNode(i)->value;
+        getNode(i)->value = getNode(_size - 1 - i)->value;
+        getNode(_size - 1 - i)->value = n;
+    }
+
 }
 
-TwoLinkedList TwoLinkedList::reverse() const
-{
-    return TwoLinkedList();
+
+TwoLinkedList TwoLinkedList::reverse() const {
+    TwoLinkedList buf(*this);
+    buf.reverse();
+    return buf;
 }
 
-TwoLinkedList TwoLinkedList::getReverseList() const
-{
-    return TwoLinkedList();
+TwoLinkedList TwoLinkedList::getReverseList() const {
+    TwoLinkedList buf(*this);
+    buf.reverse();
+    return buf;
+
 }
 
-size_t TwoLinkedList::size() const
-{
+size_t TwoLinkedList::size() const {
     return _size;
 }
 
-void TwoLinkedList::forceNodeDelete(Node* node)
-{
+
+
+void TwoLinkedList::forceNodeDelete(Node *node) {
     if (node == nullptr) {
         return;
     }
 
-    Node* nextDeleteNode = node->next;
+    Node *nextDeleteNode = node->next;
     delete node;
     forceNodeDelete(nextDeleteNode);
 }
-
-
-
-
