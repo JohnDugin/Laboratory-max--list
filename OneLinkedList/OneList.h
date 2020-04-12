@@ -26,10 +26,8 @@ public:
     OneList();
     OneList(const OneList& copyList);
     OneList& operator=(const OneList& copyList);
-
     OneList(OneList&& moveList) noexcept;
     OneList& operator=(OneList&& moveList) noexcept;
-
     ~OneList();
     ////
 

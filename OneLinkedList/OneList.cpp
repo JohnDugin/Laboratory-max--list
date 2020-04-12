@@ -2,40 +2,37 @@
 
 #include <cassert>
 
-OneList::Node::Node(const ValueType& value, Node* next)
-{
+
+// PRIVATE методы ----------------------------------------------------
+OneList::Node::Node(const ValueType& value, Node* next){
     this->value = value;
     this->next = next;
 }
 
-OneList::Node::~Node()
-{
-    // ничего не удаляем, т.к. агрегация
-}
-
-void OneList::Node::insertNext(const ValueType& value)
-{
+void OneList::Node::insertNext(const ValueType& value){
     Node* newNode = new Node(value, this->next);
     this->next = newNode;
 
 }
 
-void OneList::Node::removeNext()
-{
+void OneList::Node::removeNext(){
     Node* removeNode = this->next;
     Node* newNext = removeNode->next;
     delete removeNode;
     this->next = newNext;
 }
 
-OneList::OneList()
-        : _head(nullptr), _size(0)//просто класс создан здесь
-{
+OneList::Node::~Node(){}
 
+
+
+// PUBLIC методы ---- КОНСТРУКТОРЫ И ДИСТРУКТОР ---------------------
+OneList::OneList(){
+    _head = nullptr;
+    _size= 0;
 }
 
-OneList::OneList(const OneList& copyList)
-{
+OneList::OneList(const OneList& copyList){
     this->_size = copyList._size;
     if (this->_size == 0) {
         this->_head = nullptr;
@@ -54,29 +51,24 @@ OneList::OneList(const OneList& copyList)
     }
 }
 
-OneList& OneList::operator=(const OneList& copyList)
-{
+OneList& OneList::operator=(const OneList& copyList){
     if (this == &copyList) {
         return *this;
     }
     OneList bufList(copyList);
     this->_size = bufList._size;
     this->_head = bufList._head;
-
     return *this;
 }
 
-OneList::OneList(OneList&& moveList) noexcept
-{
+OneList::OneList(OneList&& moveList) noexcept{
     this->_size = moveList._size;
     this->_head = moveList._head;
-
     moveList._size = 0;
     moveList._head = nullptr;
 }
 
-OneList& OneList::operator=(OneList&& moveList) noexcept
-{
+OneList& OneList::operator=(OneList&& moveList) noexcept{
     if (this == &moveList) {
         return *this;
     }
@@ -90,18 +82,18 @@ OneList& OneList::operator=(OneList&& moveList) noexcept
     return *this;
 }
 
-OneList::~OneList()
-{
+OneList::~OneList(){
     forceNodeDelete(_head);
 }
 
-ValueType& OneList::operator[](const size_t pos) const
-{
+
+
+//-------------------------------------------------------------------
+ValueType& OneList::operator[](const size_t pos) const{
     return getNode(pos)->value;
 }
 
-OneList::Node* OneList::getNode(const size_t pos) const
-{
+OneList::Node* OneList::getNode(const size_t pos) const{
     if (pos < 0) {
         assert(pos < 0);
     }
@@ -117,8 +109,9 @@ OneList::Node* OneList::getNode(const size_t pos) const
     return bufNode;
 }
 
-void OneList::insert(const size_t pos, const ValueType& value)
-{
+
+
+void OneList::insert(const size_t pos, const ValueType& value){
 
     if (pos < 0) {
         assert(pos < 0);
@@ -155,15 +148,14 @@ void OneList::pushBack(const ValueType& value)
     insert(_size, value);
 }
 
-void OneList::pushFront(const ValueType& value)//добавить новый элемент
-{
+void OneList::pushFront(const ValueType& value){
     _head = new Node(value, _head);
     ++_size;
 }
 
-void OneList::remove(const size_t pos)
-{
 
+
+void OneList::remove(const size_t pos){
     if (pos < 0) {
         assert(pos < 0);
     }
@@ -188,8 +180,8 @@ void OneList::remove(const size_t pos)
     }
 
 }
-void OneList::removeNode(Node* node)
-{
+
+void OneList::removeNode(Node* node){
     int index = findIndex(node->value);
 
     if(index == -1)
@@ -213,13 +205,12 @@ void OneList::removeNode(Node* node)
 
 }
 
-void OneList::removeNextNode(Node* node)
-{
+void OneList::removeNextNode(Node* node){
     int index = findIndex(node->value);
     remove(index + 1);
 }
-void OneList::removeBack()
-{
+
+void OneList::removeBack(){
 
     Node *deleteNode = getNode(_size - 1);
     getNode(_size - 2)->next = nullptr;
@@ -227,13 +218,14 @@ void OneList::removeBack()
     --_size;
 }
 
-void OneList::removeFront()
-{
+void OneList::removeFront(){
     Node *deleteBuf = getNode(0);
     this->_head = getNode(1);
     delete deleteBuf;
     --_size;
 }
+
+
 
 long long int OneList::findIndex(const ValueType& value) const
 {
@@ -249,12 +241,13 @@ long long int OneList::findIndex(const ValueType& value) const
     return -1;
 }
 
-OneList::Node* OneList::findNode(const ValueType& value) const
-{
+OneList::Node* OneList::findNode(const ValueType& value) const{
     int index = findIndex(value);
     assert(index != -1);
     return getNode(index);
 }
+
+
 
 void OneList::reverse()
 {
@@ -268,31 +261,30 @@ void OneList::reverse()
 
 }
 
-OneList OneList::reverse() const{
-
-    OneList revList;
-
-    Node* bufNode = this->_head;
-
-    for(int i = 0;i < _size;i++){
-        revList.pushBack(bufNode->value);
-        bufNode = bufNode->next;
-    }
-
-    revList.reverse();
-
-    return revList;
-
+OneList OneList::reverse() const
+{
+    OneList buf(*this);
+    buf.reverse();
+    return buf;
+    //return LinkedList();
 
 }
 
-OneList OneList::getReverseList() const{
-    return  this->reverse();
+OneList OneList::getReverseList() const
+{
+    OneList  buf(*this);
+    buf.reverse();
+    return buf;
 }
 
-size_t OneList::size() const{
+
+
+size_t OneList::size() const
+{
     return _size;
 }
+
+
 
 void OneList::forceNodeDelete(Node* node)
 {
@@ -304,4 +296,3 @@ void OneList::forceNodeDelete(Node* node)
     delete node;
     forceNodeDelete(nextDeleteNode);
 }
-
